@@ -2,7 +2,8 @@
 const spawn = require('child_process').spawn;
 const path = require('path');
 
-const PHANTOM_PATH = path.join(__dirname, './phantomjs/bin/phantomjs');
+const SERVER_PHANTOM_PATH = path.join(__dirname, 'phantomjs/bin/phantomjs');
+const LOCAL_PHANTOM_PATH = path.join(__dirname, 'phantomjs/bin/phantomjs');
 
 let APP_START_TIME = Date.now();
 
@@ -15,15 +16,22 @@ function debugLogger(str) {
     console.log(` ${(Date.now() - APP_START_TIME)/1000}:\t${str}`);
 }
 
+function hasArg(t) {
+    return process.argv.find((v) => {
+        return t === v;
+    });
+}
+
 function spaRenderer(url) {
     return new Promise((resolve, reject) => {
         let rawData = '';
-        const handler = spawn(PHANTOM_PATH, [path.join(__dirname, './run_in_phantom.js'), url]);
+        let currentPhantomPath = hasArg('--local-sr-mode') ? LOCAL_PHANTOM_PATH : SERVER_PHANTOM_PATH;
+        const handler = spawn(currentPhantomPath, [path.join(__dirname, './run_in_phantom.js'), url]);
         handler.stdout.on('data', (data) => {
             rawData = rawData + data;
         });
         handler.on('error', (e) => {
-            debugLogger('cannot launch phantomjs: is phantomjs in this path?');
+            debugLogger('cannot launch phantomjs: is PHANTOM_PATH correct?  See README.md');
             reject(e);
         });
         handler.on('exit', (code, signal) => {
@@ -52,6 +60,8 @@ async function appEntry(query, callback) {
         let targetUrl = query.url;
         if (!targetUrl) {
             throw new Error('no url specified');
+        } else if (!(/^(https|http):\/\//i).test(targetUrl)) {
+            targetUrl = 'http://' + targetUrl;
         }
 
         targetUrl = targetUrl.replace('_hashbang_', '#!');
@@ -80,11 +90,11 @@ exports.handler_aws_lambda = (event, context, callback) => {
 };
 
 
-if (process.argv.length > 3 && process.argv[2] === '--dry-run') {
+if (process.argv.length > 3 && hasArg('--local-sr-mode')) {
     appEntry({
-        url: process.argv[3]
+        url: process.argv[process.argv.length - 1]
     }, (placeHolder, retObj) => {
-        console.log('dry run end');
+        console.log('local run end');
         console.log(' ------------------------------');
         console.log(retObj);
     });
