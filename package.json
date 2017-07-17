@@ -1,0 +1,25 @@
+{
+  "name": "spa-renderer",
+  "version": "0.1.0",
+  "description": "Prerender single page application for SEO, with out-of-box supprort for deploying to AWS Lambda or Aliyun Function Compute.",
+  "author": "Wanglei(nihiue@gmail.com)",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "node index.js --dry-run https://www.baidu.com",
+    "build": "node ./build/build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nihiue/spa-renderer"
+  },
+  "bugs": {
+    "url": "https://github.com/Nihiue/spa-renderer/issues",
+    "email": "nihiue@gmail.com"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1"
+  }
+}
