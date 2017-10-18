@@ -57,14 +57,14 @@ async function appEntry(query, callback) {
     };
 
     try {
-        let targetUrl = query.url;
+        let targetUrl = query && query.url;
         if (!targetUrl) {
             throw new Error('no url specified');
         } else if (!(/^(https|http):\/\//i).test(targetUrl)) {
             targetUrl = 'http://' + targetUrl;
         }
 
-        targetUrl = targetUrl.replace('_hashbang_', '#!');
+        targetUrl = targetUrl.replace('_hash_escape_', '#');
         debugLogger('target page:' + targetUrl);
         resp.body = await spaRenderer(targetUrl);
         debugLogger('renderer success');
@@ -73,7 +73,7 @@ async function appEntry(query, callback) {
     } catch (e) {
         debugLogger('renderer fail: ' + e);
         resp.body = e && e.toString();
-        resp.code = 400;
+        resp.statusCode = 400;
 
         callback(null, resp);
     }

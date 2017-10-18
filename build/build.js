@@ -14,7 +14,10 @@ if (!shell.test('-e', './dist')) {
     shell.mkdir('-p', './dist');
 }
 
-fs.writeFileSync(resolvePath('dist/index.js'), babel.transformFileSync(resolvePath('src/index.js')).code);
+fs.writeFileSync(resolvePath('dist/index.js'), babel.transformFileSync(resolvePath('src/index.js'), {
+    presets: ['es2016'],
+    plugins: ["transform-async-to-generator"]
+}).code);
 
 
 shell.cp('./src/run_in_phantom.js', './dist/run_in_phantom.js');
