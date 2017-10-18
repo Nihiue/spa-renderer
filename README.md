@@ -80,7 +80,7 @@ https://XXXXX.execute-api.XXXXX.amazonaws.com/prod/spa-renderer?url=https://www.
 #### Aliyun Function Compute (阿里云 函数计算 )
 在阿里云上创建一个函数计算的实例
 
-* 运行环境 Node.js 4.x
+* 运行环境 Node.js 6.x
 * 超时： 5-20 秒
 * 内存： 128MB 
 * 函数入口： `index.handler_aliyun_fc`
