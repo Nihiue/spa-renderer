@@ -30,7 +30,7 @@ page.open(system.args[1], function(status) {
         setTimeout(function() {
             page.evaluate(function() {
                 window._SPA_PROCESS_PAGE();
-            })
+            });
             system.stdout.write(page.content);
             phantom.exit(0);
         }, WAIT_SPA_READY_TIME);

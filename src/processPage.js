@@ -36,7 +36,7 @@ window._SPA_PROCESS_PAGE = function() {
             var rawHTML = el.contentDocument.querySelector('.book').innerHTML;
        
             rawHTML = rawHTML.replace(/href="(ch[^"]*html)"/g, function(a,b,c) {
-                return 'href="./?focus=' + encodeURIComponent(b) + '"';
+                return 'href="/apps/home/workspace/help?focus=' + encodeURIComponent(b) + '"';
             });
             newNode.innerHTML = rawHTML;
             el.parentNode.appendChild(newNode);
