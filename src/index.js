@@ -26,7 +26,7 @@ function spaRenderer(url) {
     return new Promise((resolve, reject) => {
         let rawData = '';
         let currentPhantomPath = hasArg('--local-sr-mode') ? LOCAL_PHANTOM_PATH : SERVER_PHANTOM_PATH;
-        const handler = spawn(currentPhantomPath, [path.join(__dirname, './run_in_phantom.js'), url]);
+        const handler = spawn(currentPhantomPath, ['--web-security=no', path.join(__dirname, './phantomDriver.js'), url]);
         handler.stdout.on('data', (data) => {
             rawData = rawData + data;
         });

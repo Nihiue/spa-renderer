@@ -42,7 +42,8 @@ Your dist folder should look like this
 ``` plain
 dist
  ├── index.js
- ├── run_in_phantom.js
+ ├── phantomDriver.js
+ ├── processPage.js
  ├── phantomjs
  ├   └── bin
  ├        └── phantomjs

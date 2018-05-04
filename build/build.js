@@ -20,7 +20,8 @@ fs.writeFileSync(resolvePath('dist/index.js'), babel.transformFileSync(resolvePa
 }).code);
 
 
-shell.cp('./src/run_in_phantom.js', './dist/run_in_phantom.js');
+shell.cp('./src/phantomDriver.js', './dist/phantomDriver.js');
+shell.cp('./src/processPage.js', './dist/processPage.js');
 
 console.log('build finish');
 
