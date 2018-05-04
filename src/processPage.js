@@ -29,16 +29,21 @@ window._SPA_PROCESS_PAGE = function() {
                 return;
             }
             const el = document.querySelector('.fs-manual-iframe-container iframe');
-            if (!el || !el.contentDocument) {
+            if (!el || !el.contentDocument || !el.dataset.baseurl) {
                 return;
             }
-            const newNode = document.createElement('div');
-            var rawHTML = el.contentDocument.querySelector('.book').innerHTML;
-       
-            rawHTML = rawHTML.replace(/href="(ch[^"]*html)"/g, function(a,b,c) {
-                return 'href="/apps/home/workspace/help?focus=' + encodeURIComponent(b) + '"';
+            const baseUrl = el.dataset.baseurl;
+            const subEl = el.contentDocument.querySelector('.book');
+            [].forEach.call(subEl.querySelectorAll('a[href]'), function(link) {
+                if (link.href.indexOf(baseUrl) > -1) {
+                    var subPath = link.href.replace(baseUrl, '');
+                    if (subPath) {
+                        link.setAttribute('href', '/apps/home/workspace/help?focus=' + encodeURIComponent(subPath));
+                    }
+                }
             });
-            newNode.innerHTML = rawHTML;
+            const newNode = document.createElement('div');
+            newNode.innerHTML = subEl.innerHTML;
             el.parentNode.appendChild(newNode);
             el.parentNode.removeChild(el);
 
