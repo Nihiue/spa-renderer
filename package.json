@@ -1,13 +1,12 @@
 {
   "name": "spa-renderer",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "description": "Prerender single page application for SEO, with out-of-box supprort for deploying to AWS Lambda or Aliyun Function Compute.",
   "author": "Wanglei(nihiue@gmail.com)",
-  "main": "./src/index.js",
+  "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "node ./src/index.js --local-sr-mode https://www.baidu.com",
-    "build": "node ./build/build.js"
+    "test": "node test.js"
   },
   "repository": {
     "type": "git",
@@ -18,11 +17,10 @@
     "email": "nihiue@gmail.com"
   },
   "dependencies": {
+    "chrome-aws-lambda": "^5.3.1",
+    "puppeteer-core": "^5.3.1"
   },
-  "devDependencies": {
-    "babel-core": "^6.25.0",
-    "babel-preset-es2016": "^6.24.1",
-    "babel-plugin-transform-async-to-generator": "^6.24.1",
-    "shelljs": "^0.7.8"
+  "engines": {
+    "node": ">=12.0.0"
   }
 }

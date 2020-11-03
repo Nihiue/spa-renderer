@@ -1,101 +1,65 @@
-'use strict';
-const spawn = require('child_process').spawn;
-const path = require('path');
+const chromium = require('chrome-aws-lambda');
 
-const SERVER_PHANTOM_PATH = path.join(__dirname, 'phantomjs/bin/phantomjs');
-const LOCAL_PHANTOM_PATH = path.join(__dirname, 'phantomjs/bin/phantomjs');
+const config = require('./config.js');
 
-let APP_START_TIME = Date.now();
+const processPageFn = require('./processPage.js');
 
-const DEBUG = true;
+function sleep(duration = 1) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, duration * 1000);
+  });
+};
 
-function debugLogger(str) {
-    if (!DEBUG) {
-        return;
-    }
-    console.log(` ${(Date.now() - APP_START_TIME)/1000}:\t${str}`);
+async function startChrome() {
+  const args = [
+    '--disable-web-security',
+    '--blink-settings=imagesEnabled=false',
+    `--user-agent="${config.userAgent}"`,
+    '--disable-gpu'
+  ].concat(chromium.args);
+
+  const path = await chromium.executablePath;
+  console.log(path);
+  const browser = await chromium.puppeteer.launch({
+    args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath,
+    headless: chromium.headless,
+    ignoreHTTPSErrors: true
+  });
+  return browser;
 }
 
-function hasArg(t) {
-    return process.argv.find((v) => {
-        return t === v;
-    });
-}
 
-function spaRenderer(url) {
-    return new Promise((resolve, reject) => {
-        let rawData = '';
-        let currentPhantomPath = hasArg('--local-sr-mode') ? LOCAL_PHANTOM_PATH : SERVER_PHANTOM_PATH;
-        const handler = spawn(currentPhantomPath, ['--web-security=no', path.join(__dirname, './phantomDriver.js'), url]);
-        handler.stdout.on('data', (data) => {
-            rawData = rawData + data;
-        });
-        handler.on('error', (e) => {
-            debugLogger('cannot launch phantomjs: is PHANTOM_PATH correct?  See README.md');
-            reject(e);
-        });
-        handler.on('exit', (code, signal) => {
-            if (code === 0) {
-                resolve(rawData);
-            } else {
-                reject(rawData);
-            }
-        });
-    });
-}
-
-async function appEntry(query, callback) {
-    APP_START_TIME = Date.now();
-    const resp = {
-        'isBase64Encoded': false,
-        'statusCode': 200,
-        'headers': {
-            'X-From-Service': 'SpaRenderer',
-            'Content-Type': 'text/html; charset=utf-8'
-        },
-        'body': ''
-    };
-
+function renderPage(pageUrl) {
+  return new Promise(async function (resolve, reject) {
+    let browser = null;
     try {
-        let targetUrl = query && query.url;
-        if (!targetUrl) {
-            throw new Error('no url specified');
-        } else if (!(/^(https|http):\/\//i).test(targetUrl)) {
-            targetUrl = 'http://' + targetUrl;
-        }
-
-        targetUrl = targetUrl.replace('_hash_escape_', '#');
-        debugLogger('target page:' + targetUrl);
-        resp.body = await spaRenderer(targetUrl);
-        debugLogger('renderer success');
-
-        callback(null, resp);
+      console.log('start render');
+      browser = await startChrome();
+      const page = await browser.newPage();
+      await page.goto(pageUrl);
+      console.log('chrome ready');
+      await sleep(config.waitTime);
+      await page.evaluate(processPageFn);
+      const htmlHandle = await page.$('html');
+      const result = await page.evaluate(html => html.outerHTML, htmlHandle);
+      await htmlHandle.dispose();
+      resolve(result);
+      await browser.close();
     } catch (e) {
-        debugLogger('renderer fail: ' + e);
-        resp.body = e && e.toString();
-        resp.statusCode = 400;
-
-        callback(null, resp);
+      console.log(e);
+      reject(e);
+      if (browser !== null) {
+        await browser.close();
+      }
     }
-
+  });
 }
 
-exports.handler_aliyun_fc = (eventBuf, context, callback) => {
-    const event = JSON.parse(eventBuf);
-    appEntry(event.queryParameters, callback);
-};
+exports.renderPage = renderPage;
 
-exports.handler_aws_lambda = (event, context, callback) => {
-    appEntry(event.queryStringParameters, callback);
-};
-
-
-if (process.argv.length > 3 && hasArg('--local-sr-mode')) {
-    appEntry({
-        url: process.argv[process.argv.length - 1]
-    }, (placeHolder, retObj) => {
-        console.log('local run end');
-        console.log(' ------------------------------');
-        console.log(retObj);
-    });
-}
+// (async function runTest(pageUrl) {
+//   const content = await renderPage(pageUrl);
+//   console.log(content);
+// })('https://www.kesci.com');
