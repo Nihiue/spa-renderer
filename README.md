@@ -22,7 +22,7 @@ $ npm run test
 
 #### AWS Lambda
 
-Compress the **content** of dist folder into `dist.zip`
+Compress the folder into `dist.zip`
 
 Login to https://aws.amazon.com , find Service - Compute - Lambda , and create a new lambda function
 
